@@ -1,0 +1,14 @@
+col-md-6{
+align-content: center;
+margin-top: 180px;
+}
+h2{
+    text-align: center;
+    display: inline;
+}
+
+
+small { 
+    font-size: smaller;
+    white-space: nowrap;
+}

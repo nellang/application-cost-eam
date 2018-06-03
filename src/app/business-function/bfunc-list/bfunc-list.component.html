@@ -1,0 +1,46 @@
+<div class="panel panel-primary">
+  <div class="panel-heading">
+    <legend>Edit Business-Function </legend>
+    <div class="form-group">
+      <form id="add-bfunc">
+        <div class="form-group">
+          <b>
+            <label>Name</label>
+          </b>
+          <input type="form-group" [(ngModel)]="capability.name" class="form-control" name="name" [ngModelOptions]="{standalone: true}">
+        </div>
+        <div class="form-group">
+          <b>
+            <label>Description</label>
+          </b>
+          <textarea type="text" [(ngModel)]="capability.description" class="form-control" name="descr" [ngModelOptions]="{standalone: true}"></textarea>
+
+          <fieldset class="form-group" [(ngModel)]="typ" name="typ" [ngModelOptions]="{standalone: true}" ngDefaultControl>
+            <b>
+              <label for="Typ">Typ</label>
+            </b>
+            <div class="form-check">
+              <label class="form-check-label">
+                <input type="radio" [(ngModel)]="capability.type" class="form-check-input" name="typ" [ngModelOptions]="{standalone: true}" id="optionsRadios1"
+                  value="Functional" checked=""> Functional
+              </label>
+            </div>
+            <div class="form-check">
+              <label class="form-check-label">
+                <input type="radio" [(ngModel)]="capability.type" class="form-check-input" name="typ" [ngModelOptions]="{standalone: true}" id="optionsRadios2"
+                  value="Non-Functional"> Non-Functional
+              </label>
+            </div>
+            <div class="form-check">
+              <label class="form-check-label">
+                <input type="radio" [(ngModel)]="capability.type" class="form-check-input" name="typ" [ngModelOptions]="{standalone: true}" id="optionsRadios3"
+                  value="Domain"> Domain
+              </label>
+            </div>
+          </fieldset>
+        </div>
+        <button (click)="fbEditData(name, descr, typ, bprocess,applications)" type="submit" class="btn btn-primary" [routerLink]="['/function']">Submit</button>
+      </form>
+    </div>
+  </div>
+</div>
