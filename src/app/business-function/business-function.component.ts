@@ -1,11 +1,11 @@
-import {Component, OnInit, ViewEncapsulation} from '@angular/core';
-import {Router, ActivatedRoute, Params} from '@angular/router';
-import {DataService} from '../data.service';
-import {Http} from '@angular/http';
-import {rootRoute} from '@angular/router/src/router_module';
-import {SearchNamePipe} from '../search-name.pipe';
-import {LoginComponent} from '../login/login.component';
-import {NavbarService} from '../navbar.service';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Router, ActivatedRoute, Params } from '@angular/router';
+import { DataService } from '../data.service';
+import { Http } from '@angular/http';
+import { rootRoute } from '@angular/router/src/router_module';
+import { SearchNamePipe } from '../search-name.pipe';
+import { LoginComponent } from '../login/login.component';
+import { NavbarService } from '../navbar.service';
 
 declare var firebase: any;
 const d: Date = new Date();
@@ -42,27 +42,29 @@ export class BusinessFunctionComponent implements OnInit {
     private route: ActivatedRoute,
     private searchName: SearchNamePipe,
     private navbarService: NavbarService
-  ) {
-
+    ) {
+       
     this.currentDate = Date().toString();
   }
 
+ 
 
   ngOnInit() {
     firebase.database().ref().child('/AllID/').on('child_added', (snapshot) => {
-      this.idlist.push(snapshot.val());
+      this.idlist.push(snapshot.val())
       this.id = this.idlist[0];
       this.id++;
       this.fbGetData();
-    });
+    })
   }
 
 
   fbGetData() {
 
-    firebase.database().ref().child('/BFunctions/').orderByChild('CFlag').equalTo('active').on('child_added', (snapshot) => {
-      this.list.push(snapshot.val());
-    });
+    firebase.database().ref().child('/BFunctions/').orderByChild('CFlag').equalTo('active').
+      on('child_added', (snapshot) => {
+        this.list.push(snapshot.val())
+      });
 
   }
 
@@ -78,7 +80,7 @@ export class BusinessFunctionComponent implements OnInit {
     });
     this.name = '';
     this.description = '';
-
+   
 
     firebase.database().ref().child('/AllID/').set({
       BfuncID: this.id++
@@ -96,7 +98,7 @@ export class BusinessFunctionComponent implements OnInit {
   }
 
   sort(property) {
-    this.isDescending = !this.isDescending; //change the direction
+    this.isDescending = !this.isDescending; //change the direction    
     this.column = property;
     this.direction = this.isDescending ? 1 : -1;
   };
@@ -104,7 +106,7 @@ export class BusinessFunctionComponent implements OnInit {
   displayForm(val) {
     if (val == true) {
       this.statusForm = false;
-      console.log('status ' + this.statusForm);
+      console.log("status " + this.statusForm);
     } else {
       this.statusForm = true;
       console.log(this.statusForm);

@@ -1,5 +1,5 @@
-import {Component} from '@angular/core';
-import {NavbarService} from './navbar.service';
+import { Component } from '@angular/core';
+import {NavbarService} from "./navbar.service";
 
 @Component({
   selector: 'app-root',
@@ -9,23 +9,21 @@ import {NavbarService} from './navbar.service';
 export class AppComponent {
   title = 'Welcome to EAM Lab';
 
-  public BusinessFunction = {test: 'max',};
+  public BusinessFunction ={test : "max", }
   public BusinessClicked = false;
 
-  onSelect() {
-    this.BusinessClicked = true;
+  onSelect(){
+    this.BusinessClicked=true;
   }
 
   menueList = [
-    {
-      name: 'Business Function',
-      slug: 'function'
-    },
-    {
-      name: 'Application',
-      slug: 'application'
-    }];
-
-  constructor(private navbarService: NavbarService) {
-  }
+  {
+    name: "Business Function",
+    slug: "function"
+  },
+{
+    name: "Application",
+    slug: "application"
+  } ];
+  constructor(private navbarService: NavbarService) { }
 }
