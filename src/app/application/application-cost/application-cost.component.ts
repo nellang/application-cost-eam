@@ -4,6 +4,7 @@ import {Http} from '@angular/http';
 import {ActivatedRoute, Router} from '@angular/router';
 import 'rxjs/add/operator/map';
 import {CostEntry, CostType, PeriodType} from './cost-entry';
+import {ApplicationCost} from './application-cost';
 import {Application} from '../../entities/application';
 
 declare var firebase: any;
@@ -19,15 +20,23 @@ declare var firebase: any;
 export class ApplicationCostComponent implements OnInit {
 
   private sub2: any;
-
-  name: string;
-  description: string;
+  private root: any;
 
   application: Application = new Application();
-
-  applicationCosts = [];
-  costEntries: CostEntry[] = [];
+  applicationCosts: ApplicationCost[] = [];
+  type = CostType;
+  period = PeriodType;
   currentDate: string;
+
+  types(): Array<string> {
+    const types = Object.keys(this.type);
+    return types;
+  }
+
+  periods(): Array<string> {
+    const periods = Object.keys(this.period);
+    return periods.slice(0, 3);
+  }
 
   constructor(private dataService: DataService, private router: Router, private route: ActivatedRoute, public http: Http) {
     this.currentDate = Date().toString();
@@ -42,55 +51,81 @@ export class ApplicationCostComponent implements OnInit {
       this.application.name = params['name'];
     });
 
-    firebase.database().ref().child('/Application/' + this.application.name).child('ECost').child('CCostEntry').on('child_added', (snapshot) => {
-      this.costEntries.push(snapshot.val());
+    this.root = firebase.database().ref().child('/Application/' + this.application.name);
+
+    this.root.on('value', (snapshot) => {
+      this.application = snapshot.val();
     });
 
-    firebase.database().ref().child('/Application/' + this.application.name).child('ECost').on('child_added', (snapshot) => {
-      this.applicationCosts.push(snapshot.val());
-    });
-
-    console.log('There are ' + this.costEntries.length + ' cost entries');
-    console.log('There are ' + this.applicationCosts.length + ' application costs');
-  }
-
-  fbAddCost(name, descr, costName, amount, currency, type, period) {
-    console.log(name, descr, costName, amount, currency, type, period);
-    if (period = undefined)
-      period = PeriodType.none;
-    firebase.database().ref().child('/Application/').child(this.application.name).set({
-      AName: this.application.name,
-      BDescr: this.application.description,
-      CFlag: 'active',
-      DCreationDate: this.application.creationDate,
-      GDateFrom: this.application.dateFrom,
-      HDateTo: this.application.dateTo,
-      IGeography: this.application.geography,
-      JVersion: this.application.version,
+    firebase.database().ref().child('/Application/' + this.application.name).update({
       ECost: {
-        AName: name,
-        BDescription: descr,
-        CCOstEntry: {
-          AName: costName,
-          BAmount: amount,
-          CCurrency: currency,
-          DType: type,
-          EPeriod: period
+        'Setup': {
+          AName: 'Setup',
+          BDescription: 'Setup cost for SAP ERP',
+          CCostEntry: {
+            'Tax': {
+              AName: 'Tax',
+              BAmount: 1500.00,
+              CCurrency: 'EUR',
+              DType: 'periodic',
+              EPeriod: 'yearly'
+            }
+          }
         }
       },
       KEditDate: this.currentDate
     });
 
-    console.log('There are ' + this.costEntries.length + ' cost entries');
-    console.log('There are ' + this.applicationCosts.length + ' application costs');
-
-    this.costEntries.forEach(costEntry => {
-      console.log(costEntry);
+    this.root.child('/ECost/').on('child_added', (snapshot) => {
+      const cost = snapshot.val();
+      const costEntries = [];
+      snapshot.child('/CCostEntry/').forEach(function (childSnapshot) {
+        const costEntry = childSnapshot.val();
+        costEntries.push(createCostEntry(costEntry.AName, costEntry.CCurrency, costEntry.BAmount, costEntry.DType, costEntry.EPeriod));
+      });
+      this.applicationCosts.push(createApplicationCost(cost.AName, cost.BDescription, costEntries));
     });
-    this.applicationCosts.forEach(cost => {
-      console.log(cost);
+
+    console.log(this.applicationCosts.length + ' application costs');
+    this.applicationCosts.forEach(applicationCost => {
+      console.log(applicationCost);
+    });
+
+  }
+
+  /*fbAddCost() {
+    const applicationCostTbody = document.getElementsByTagName('tbody');
+    for (let i = 1; i < applicationCostTbody.length; i++) {
+      const costEntries: CostEntry[] = [];
+      const costEntryTr = applicationCostTbody.item(i).getElementsByTagName('tr');
+      for (let j = 1; j < costEntryTr.length; j++) {
+
+        costEntries.push(createCostEntry(document.getElementById(i+ "" + "" + j + "" + "costName")));
+      }
+    }
+
+    costEntries.push(this.fbAddCostEntry());
+    this.root.child('/ECost/' + name).update({
+      AName: name,
+      BDescription: description,
+      CCostEntry: {
+        costEntries
+      }
     });
   }
+
+  fbAddCostEntry() {
+    const costEntry = {
+      costName: {
+        AName: document.getcostName,
+        BAmount: amount,
+        CCurrency: currency,
+        DType: type,
+        EPeriod: period
+      }
+    };
+    return costEntry;
+  }*/
 
   addApplicationCost() {
     const costTable = document.getElementById('costTable');
@@ -113,7 +148,7 @@ export class ApplicationCostComponent implements OnInit {
     nameInput.setAttribute('type', 'text');
     nameInput.setAttribute('class', 'form-control');
     nameInput.setAttribute('ng-model', 'name');
-    nameInput.setAttribute('placeholder', 'Name');
+    nameInput.setAttribute('placeholder', 'Enter Name');
     nameTd.appendChild(nameInput);
     applicationCostTr.appendChild(nameTd);
 
@@ -122,7 +157,7 @@ export class ApplicationCostComponent implements OnInit {
     descInput.setAttribute('type', 'text');
     descInput.setAttribute('class', 'form-control');
     descInput.setAttribute('ng-model', 'desc');
-    descInput.setAttribute('placeholder', 'Description');
+    descInput.setAttribute('placeholder', 'Enter Description');
     descTd.appendChild(descInput);
     applicationCostTr.appendChild(descTd);
 
@@ -186,13 +221,25 @@ function createCostEntry(name, currency: string, amount: number, type: CostType,
 
 }
 
+function createApplicationCost(name, description: string, costEntries: CostEntry[]): ApplicationCost {
+
+  const applicationCost: ApplicationCost = {
+    name: name,
+    description: description,
+    costEntries: costEntries
+  };
+
+  return applicationCost;
+
+}
+
 function addTd(tr) {
   const nameTd = document.createElement('td');
   const nameInput = document.createElement('input');
   nameInput.setAttribute('type', 'text');
   nameInput.setAttribute('class', 'form-control');
   nameInput.setAttribute('ng-model', 'name');
-  nameInput.setAttribute('placeholder', 'Name');
+  nameInput.setAttribute('placeholder', 'Enter Name');
   nameTd.appendChild(nameInput);
   tr.appendChild(nameTd);
 
@@ -201,7 +248,7 @@ function addTd(tr) {
   amountInput.setAttribute('type', 'number');
   amountInput.setAttribute('class', 'form-control');
   amountInput.setAttribute('ng-model', 'name');
-  amountInput.setAttribute('placeholder', 'Name');
+  amountInput.setAttribute('placeholder', 'Enter Amount');
   amountTd.appendChild(amountInput);
   tr.appendChild(amountTd);
 
@@ -210,7 +257,7 @@ function addTd(tr) {
   currencyInput.setAttribute('type', 'text');
   currencyInput.setAttribute('class', 'form-control');
   currencyInput.setAttribute('ng-model', 'name');
-  currencyInput.setAttribute('placeholder', 'Name');
+  currencyInput.setAttribute('placeholder', 'Enter Currency');
   currencyTd.appendChild(currencyInput);
   tr.appendChild(currencyTd);
 
