@@ -13,37 +13,37 @@
                  placeholder="Enter Description" id="{{i+1}}description">
         </td>
       </tr>
-      <tr id={{i+1}}+{{j+1}} *ngFor="let costEntry of costEntries; let j = index">
+      <tr class="costEntry" id={{i+1}}+{{j+1}} *ngFor="let costEntry of applicationCost.costEntries; let j = index">
         <td>
           <button type="button" class="btn btn-primary" (click)="addCostEntry(i+1)">Add Cost Entry</button>
         </td>
         <td>
           <input type="text" [(ngModel)]="costEntry.name" class="form-control" placeholder="Enter Name"
-                 id={{i+1}}{{j+1}}"costName">
+                 id="{{i+1}}{{j+1}}costName">
         </td>
         <td>
           <input type="number" [(ngModel)]="costEntry.amount" class="form-control" placeholder="Enter Amount"
-                 id={{i+1}}+{{j+1}}+"amount">
+                 id="{{i+1}}{{j+1}}amount">
         </td>
         <td>
           <input type="text" [(ngModel)]="costEntry.currency" class="form-control" placeholder="Enter Currency"
-                 id={{i+1}}+{{j+1}}+"currency">
+                 id="{{i+1}}{{j+1}}currency">
         </td>
-        <td *ngFor="let type of types()" [(ngModel)]="costEntry.type">
-          <input type="radio" id={{i+1}}+{{j+1}}+"type" class="form-control" ng-value="type" required>{{type}}
-          <!--<label for="typePeriodic">Periodic</label>
-          <input type="radio" id="typePeriodic" [(ngModel)]="costEntry.type" class="form-control" ng-value="periodic"
-                 required #type="ngModel">-->
+        <td *ngFor="let type of types()" [(ngModel)]="costEntry.type" ngDefaultControl>
+          <input type="radio" id="{{i+1}}{{j+1}}type" class="form-control" ng-value="type" required>{{type}}
         </td>
-        <!--<td>
-          <select class="form-control" [(ngModel)]="costEntry.period" id={{i+1}}+{{j+1}}+"period">
-            <option *ngFor="let period of periods()" ng-value="period">{{period}}</option>
+        <td>
+          <select class="form-control" [(ngModel)]="costEntry.period" id="{{i+1}}{{j+1}}period" ngDefaultControl>
+            <option *ngFor="let period of periods()" ng-value="period">
+              {{period}}
+            </option>
           </select>
-        </td>-->
+        </td>
       </tr>
       </tbody>
     </table>
     <button type="button" (click)="addApplicationCost()" class="btn btn-primary">Add Application Cost</button>
-    <button type="submit" class="btn btn-primary" (click)="fbAddCost()">Save</button>
   </div>
+  <button type="submit" class="btn btn-primary" (click)="fbAddCost()">Save</button>
+  <button type="reset" class="btn btn-primary" [routerLink]="['/application']">Cancel</button>
 </div>
