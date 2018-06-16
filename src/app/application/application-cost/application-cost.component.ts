@@ -33,7 +33,7 @@ export class ApplicationCostComponent implements OnInit {
   }
 
   periods(): Array<string> {
-    return Object.keys( this.periodType ).map( item => PeriodType[item as string] ).slice( 0, 3 );
+    return Object.values( this.periodType ).slice( 0, 3 );
   }
 
   constructor(private dataService: DataService, private router: Router, private route: ActivatedRoute, public http: Http) {
@@ -44,6 +44,7 @@ export class ApplicationCostComponent implements OnInit {
     this.fbGetData();
   }
 
+  // get data from database
   fbGetData() {
     this.sub2 = this.route.params.subscribe( params => {
       this.application.name = params['name'];
@@ -51,10 +52,16 @@ export class ApplicationCostComponent implements OnInit {
 
     this.root = firebase.database().ref().child( '/Application/' + this.application.name );
 
+    // get application data
     this.root.on( 'value', (snapshot) => {
       this.application = snapshot.val();
+      // create cost node in database if not exists
+      if (!snapshot.hasChild( '/ECost/' )) {
+        this.root.child( '/ECost/' ).push();
+      }
     } );
 
+    // add test data
     this.root.update( {
       ECost: {
         'Setup': {
@@ -63,7 +70,7 @@ export class ApplicationCostComponent implements OnInit {
           CCostEntry: {
             'Tax': {
               AName: 'Tax',
-              BAmount: 1500.00,
+              BAmount: 1500.50,
               CCurrency: 'EUR',
               DType: 'Periodic',
               EPeriod: 'Yearly'
@@ -74,19 +81,24 @@ export class ApplicationCostComponent implements OnInit {
       KEditDate: this.currentDate
     } );
 
-    this.root.child( '/ECost/' ).on( 'value', (snapshot) => {
-      snapshot.forEach( (costSnapshot) => {
-        const name = costSnapshot.key;
-        const cost = costSnapshot.val();
-        const costEntries = [];
-        this.root.child( '/ECost/' + name ).child( '/CCostEntry/' ).on( 'value', (childSnapshot) => {
-          childSnapshot.forEach( (costEntrySnapshot) => {
-            const costEntry = costEntrySnapshot.val();
-            costEntries.push( createCostEntry( costEntry.AName, costEntry.CCurrency, costEntry.BAmount, costEntry.DType, costEntry.EPeriod ) );
+    // save data from database into array
+    this.root.on( 'value', (snapshot) => {
+      if (snapshot.hasChild( '/ECost/' )) {
+        this.root.child( '/ECost/' ).on( 'value', (childSnapshot) => {
+          childSnapshot.forEach( (costSnapshot) => {
+            const name = costSnapshot.key;
+            const cost = costSnapshot.val();
+            const costEntries = [];
+            this.root.child( '/ECost/' + name ).child( '/CCostEntry/' ).on( 'value', (grandChildSnapshot) => {
+              grandChildSnapshot.forEach( (costEntrySnapshot) => {
+                const costEntry = costEntrySnapshot.val();
+                costEntries.push( createCostEntry( costEntry.AName, costEntry.CCurrency, costEntry.BAmount, costEntry.DType, costEntry.EPeriod ) );
+              } );
+            } );
+            this.applicationCosts.push( createApplicationCost( cost.AName, cost.BDescription, costEntries ) );
           } );
         } );
-        this.applicationCosts.push( createApplicationCost( cost.AName, cost.BDescription, costEntries ) );
-      } );
+      }
     } );
 
     console.log( this.applicationCosts.length + ' application costs' );
@@ -96,30 +108,29 @@ export class ApplicationCostComponent implements OnInit {
 
   }
 
+  // add new costs or update
   fbAddCost() {
+
+    // loop through the application costs of an application
     const applicationCostTbody = document.getElementsByTagName( 'tbody' );
-    for (let i = 1; i <= applicationCostTbody.length; i++) {
+    for (let i = 0; i < applicationCostTbody.length; i++) {
+
+      // fetch input data
       const name = (<HTMLInputElement> document.getElementById( i + 'name' )).value;
       const description = (<HTMLInputElement> document.getElementById( i + 'description' )).value;
 
       console.log( name, description );
 
-      this.root.on( 'value', (snapshot) => {
-        if (!snapshot.hasChild( '/ECost/' )) {
-          this.root.child( '/ECost/' ).push();
-        }
-        if (!snapshot.child( '/ECost/' + name ).hasChild( '/CCostEntry/' )) {
-          this.root.child( '/ECost/' + name ).child( '/CCostEntry/' ).push();
-        }
-      } );
-
       this.root.child( '/ECost/' + name ).update( {
         AName: name,
-        BDescription: description
+        BDescription: description,
+        CCostEntry: this.applicationCosts[i].costEntries
       } );
 
-      const costEntryTr = applicationCostTbody.item( i - 1 ).getElementsByClassName( 'costEntry' );
-      for (let j = 1; j <= costEntryTr.length; j++) {
+      // loop through the cost entries of an application cost
+      for (let j = 0; j < applicationCostTbody.item( i ).getElementsByClassName( 'costEntry' ).length; j++) {
+
+        // fetch input data
         let costName;
         if (document.getElementById( i + '' + j + 'costName' ) != null) {
           costName = (<HTMLInputElement> document.getElementById( i + '' + j + 'costName' )).value;
@@ -139,6 +150,8 @@ export class ApplicationCostComponent implements OnInit {
         let period;
         if (document.getElementById( i + '' + j + 'period' ) != null) {
           period = (<HTMLInputElement> document.getElementById( i + '' + j + 'period' )).value;
+        } else {
+          period = PeriodType.none;
         }
 
         console.log( costName, amount, currency, type, period );
@@ -151,6 +164,9 @@ export class ApplicationCostComponent implements OnInit {
           EPeriod: period
         } );
       }
+
+      console.log( this.applicationCosts[i].name );
+      this.root.child( '/ECost/' + this.applicationCosts[i].name ).remove();
     }
 
     this.root.update( {
@@ -164,6 +180,7 @@ export class ApplicationCostComponent implements OnInit {
 
   }
 
+  // add new HTML Elements for application cost
   addApplicationCost() {
 
     const costTable = document.getElementById( 'costTable' );
@@ -221,19 +238,30 @@ export class ApplicationCostComponent implements OnInit {
     costTable.appendChild( tbody );
   }
 
-  addCostEntry(id): any {
+  // add new HTML Elements for cost entry
+  addCostEntry(id) {
     const cost = document.getElementById( id );
     const tr = document.createElement( 'tr' );
     const lastEntryId = String( cost.children.length );
+    console.log( cost.children );
     tr.setAttribute( 'id', id + lastEntryId );
     tr.appendChild( document.createElement( 'td' ) );
     addTd( tr );
     cost.insertBefore( tr, cost.lastChild );
   }
 
+  // period can't be selected for one-off cost type
+  disablePeriod(val) {
+    const radioButton = <HTMLInputElement> document.getElementById( val + 'type' );
+    if (radioButton.checked && radioButton.value === 'One-off') {
+      return true;
+    }
+    return false;
+  }
+
 }
 
-function createCostEntry(name, currency: string, amount: number, type: CostType, period: PeriodType): CostEntry {
+function createCostEntry(name: string, currency: string, amount: number, type: CostType, period: PeriodType): CostEntry {
   const costEntry: CostEntry = {
     name: name,
     amount: amount,
@@ -245,7 +273,7 @@ function createCostEntry(name, currency: string, amount: number, type: CostType,
   return costEntry;
 }
 
-function createApplicationCost(name, description: string, costEntries: CostEntry[]): ApplicationCost {
+function createApplicationCost(name: string, description: string, costEntries: CostEntry[]): ApplicationCost {
   const applicationCost: ApplicationCost = {
     name: name,
     description: description,
@@ -255,6 +283,7 @@ function createApplicationCost(name, description: string, costEntries: CostEntry
   return applicationCost;
 }
 
+// add HTML input elements
 function addTd(tr) {
   const nameTd = document.createElement( 'td' );
   const nameInput = document.createElement( 'input' );
@@ -285,22 +314,20 @@ function addTd(tr) {
 
   const typeTd = document.createElement( 'td' );
   const label1 = document.createElement( 'label' );
-  label1.setAttribute( 'for', 'typeOneOff' );
   label1.textContent = 'One-off';
   const typeInput1 = document.createElement( 'input' );
   typeInput1.setAttribute( 'type', 'radio' );
   typeInput1.setAttribute( 'id', 'typeOneOff' );
   typeInput1.setAttribute( 'class', 'form-control' );
-  typeInput1.setAttribute( 'ng-model', 'type' );
+  typeInput1.setAttribute( 'ng-model', 'costEntry.type' );
   typeInput1.setAttribute( 'value', 'oneOff' );
   const label2 = document.createElement( 'label' );
-  label2.setAttribute( 'for', 'typePeriodic' );
   label2.textContent = 'Periodic';
   const typeInput2 = document.createElement( 'input' );
   typeInput2.setAttribute( 'type', 'radio' );
   typeInput2.setAttribute( 'id', 'typePeriodic' );
   typeInput2.setAttribute( 'class', 'form-control' );
-  typeInput2.setAttribute( 'ng-model', 'type' );
+  typeInput2.setAttribute( 'ng-model', 'costEntry.type' );
   typeInput2.setAttribute( 'value', 'periodic' );
   typeTd.appendChild( label1 );
   typeTd.appendChild( typeInput1 );
@@ -311,7 +338,7 @@ function addTd(tr) {
   const periodTd = document.createElement( 'td' );
   const select = document.createElement( 'select' );
   select.setAttribute( 'class', 'form-control' );
-  select.setAttribute( 'ng-model', 'period' );
+  select.setAttribute( 'ng-model', 'costEntry.period' );
   const option1 = document.createElement( 'option' );
   option1.setAttribute( 'value', 'monthly' );
   option1.textContent = 'Monthly';
