@@ -6,7 +6,7 @@
         <td>{{i+1}}</td>
         <td>
           <input type="text" [(ngModel)]="applicationCost.name" class="form-control" placeholder="Enter Name"
-                 id="{{i}}name">
+                 id="{{i}}name" >
         </td>
         <td>
           <input type="text" [(ngModel)]="applicationCost.description" class="form-control"
@@ -45,6 +45,6 @@
     </table>
     <button type="button" (click)="addApplicationCost()" class="btn btn-primary">Add Application Cost</button>
   </div>
-  <button type="submit" class="btn btn-primary" (click)="fbAddCost()">Save</button>
+  <button type="submit" class="btn btn-primary" (click)="fbAddCost()" [routerLink]="['/application']"> Save</button>
   <button type="reset" class="btn btn-primary" [routerLink]="['/application']">Cancel</button>
 </div>
