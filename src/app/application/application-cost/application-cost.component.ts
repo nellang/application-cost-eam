@@ -288,27 +288,30 @@ function addTd(tr) {
   const nameTd = document.createElement( 'td' );
   const nameInput = document.createElement( 'input' );
   nameInput.setAttribute( 'type', 'text' );
+  nameInput.setAttribute( '[(ng-model)]', 'costEntry.name' );
   nameInput.setAttribute( 'class', 'form-control' );
-  nameInput.setAttribute( 'ng-model', 'name' );
   nameInput.setAttribute( 'placeholder', 'Enter Name' );
+  nameInput.setAttribute( 'id', '{{i}}{{j}}costName' );
   nameTd.appendChild( nameInput );
   tr.appendChild( nameTd );
 
   const amountTd = document.createElement( 'td' );
   const amountInput = document.createElement( 'input' );
   amountInput.setAttribute( 'type', 'number' );
+  nameInput.setAttribute( '[(ng-model)]', 'costEntry.amount' );
   amountInput.setAttribute( 'class', 'form-control' );
-  amountInput.setAttribute( 'ng-model', 'name' );
   amountInput.setAttribute( 'placeholder', 'Enter Amount' );
+  nameInput.setAttribute( 'id', '{{i}}{{j}}amount' );
   amountTd.appendChild( amountInput );
   tr.appendChild( amountTd );
 
   const currencyTd = document.createElement( 'td' );
   const currencyInput = document.createElement( 'input' );
   currencyInput.setAttribute( 'type', 'text' );
+  nameInput.setAttribute( '[(ng-model)]', 'costEntry.currency' );
   currencyInput.setAttribute( 'class', 'form-control' );
-  currencyInput.setAttribute( 'ng-model', 'name' );
   currencyInput.setAttribute( 'placeholder', 'Enter Currency' );
+  nameInput.setAttribute( 'id', '{{i}}{{j}}currency' );
   currencyTd.appendChild( currencyInput );
   tr.appendChild( currencyTd );
 

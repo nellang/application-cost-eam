@@ -1,13 +1,13 @@
-import {Component, OnInit, ViewEncapsulation} from '@angular/core';
-import {Router, ActivatedRoute, Params} from '@angular/router';
-import {DataService} from '../data.service';
-import {Http} from '@angular/http';
-import {SearchNamePipe} from '../search-name.pipe';
-import {rootRoute} from '@angular/router/src/router_module';
-import {LoginComponent} from '../login/login.component';
-import {IMyOptions} from 'mydatepicker';
-import {NavbarService} from '../navbar.service';
-import {resolve} from 'q';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Router, ActivatedRoute, Params } from '@angular/router';
+import { DataService } from '../data.service';
+import { Http } from '@angular/http';
+import { SearchNamePipe } from '../search-name.pipe'
+import { rootRoute } from '@angular/router/src/router_module';
+import { LoginComponent } from '../login/login.component'
+import { IMyOptions } from 'mydatepicker';
+import { NavbarService } from '../navbar.service';
+import { resolve } from 'q';
 
 
 declare var firebase: any;
@@ -48,6 +48,9 @@ export class Application implements OnInit {
   };
 
 
+
+
+
   constructor(
     private dataService: DataService,
     private router: Router,
@@ -58,32 +61,32 @@ export class Application implements OnInit {
 
     this.currentDate = Date().toString();
 
-  }
-
+}
   ngOnInit() {
     this.fbGetData();
-    this.navbarService.show();
+    this.navbarService.show(); 
   }
 
-
+  
   fbGetData() {
 
-    firebase.database().ref().child('/Application/').orderByChild('CFlag').equalTo('active').on('child_added', (snapshot) => {
-      this.list.push(snapshot.val());
-    });
+    firebase.database().ref().child('/Application/').orderByChild('CFlag').equalTo('active').
+      on('child_added', (snapshot) => {
+        this.list.push(snapshot.val())
+      })
   }
 
   fbPostData(name, description, dateFrom, dateTo, geography, version) {
     console.log(name, description, dateFrom, dateTo, geography);
     firebase.database().ref().child('/Application/').child(name).set({
-      AName: name,
-      BDescr: description,
-      CFlag: 'active',
-      DCreationDate: this.currentDate,
-      GDateFrom: dateFrom,
-      HDateTo: dateTo,
-      IGeography: geography,
-      JVersion: version
+      AName: name, 
+      BDescr: description, 
+      CFlag: 'active', 
+      DCreationDate: this.currentDate, 
+      GDateFrom: dateFrom, 
+      HDateTo: dateTo, 
+      IGeography: geography, 
+      JVersion: version 
     });
     this.name = '';
     this.description = '';
@@ -99,24 +102,26 @@ export class Application implements OnInit {
       CFlag: 'archived'
     });
     this.performDelete('erste').then((res) => {
-      return ('refresh confirmed');
-    }).then((res) => {
-      window.location.href = window.location.href;
-    });
+      return('refresh confirmed');
+      }).then((res) => {
+        window.location.href = window.location.href;
+    })
   }
 
-  performDelete = function (test: string): Promise<{ test: string }> {
+  performDelete = function( test :string ) : Promise<{test :string }>{
     return new Promise((resolve) => {
       console.log(`Status: ${test}`);
       setTimeout(() => {
-        resolve({test: test});
+        resolve({ test: test});
       }, 200);
     });
-  };
+}
+
+
 
 
   sort(property) {
-    this.isDescending = !this.isDescending; //change the direction
+    this.isDescending = !this.isDescending; //change the direction    
     this.column = property;
     this.direction = this.isDescending ? 1 : -1;
   };
@@ -124,7 +129,7 @@ export class Application implements OnInit {
   displayForm(val) {
     if (val == true) {
       this.statusForm = false;
-      console.log('status ' + this.statusForm);
+      console.log("status " + this.statusForm);
     } else {
       this.statusForm = true;
       console.log(this.statusForm);

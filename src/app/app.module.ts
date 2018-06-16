@@ -19,7 +19,7 @@ import {AuthenticationService} from "./authentication.service";
 import {NavbarService} from "./navbar.service";
 import {ChartsModule} from 'ng2-charts/ng2-charts';
 import {Chart} from 'chart.js';
-import { ApplicationCostComponent } from './application/application-cost/application-cost.component';
+import {ApplicationCostComponent} from './application/application-cost/application-cost.component';
 
 
 
@@ -35,7 +35,7 @@ import { ApplicationCostComponent } from './application/application-cost/applica
     OrderByPipe,
     LoginComponent,
     ApplicationListComponent,
-    ApplicationCostComponent,
+    ApplicationCostComponent
   ],
 
   imports: [
