@@ -82,14 +82,14 @@ export class ApplicationCostComponent implements OnInit {
     } );
 
     // save data from database into array
-    this.root.on( 'value', (snapshot) => {
+    this.root.once( 'value', (snapshot) => {
       if (snapshot.hasChild( '/ECost/' )) {
-        this.root.child( '/ECost/' ).on( 'value', (childSnapshot) => {
+        this.root.child( '/ECost/' ).once( 'value', (childSnapshot) => {
           childSnapshot.forEach( (costSnapshot) => {
             const name = costSnapshot.key;
             const cost = costSnapshot.val();
             const costEntries = [];
-            this.root.child( '/ECost/' + name ).child( '/CCostEntry/' ).on( 'value', (grandChildSnapshot) => {
+            this.root.child( '/ECost/' + name ).child( '/CCostEntry/' ).once( 'value', (grandChildSnapshot) => {
               grandChildSnapshot.forEach( (costEntrySnapshot) => {
                 const costEntry = costEntrySnapshot.val();
                 costEntries.push( createCostEntry( costEntry.AName, costEntry.CCurrency, costEntry.BAmount, costEntry.DType, costEntry.EPeriod ) );
@@ -251,12 +251,14 @@ export class ApplicationCostComponent implements OnInit {
   }
 
   // period can't be selected for one-off cost type
-  disablePeriod(val) {
+  disablePeriod(val, type) {
     const radioButton = <HTMLInputElement> document.getElementById( val + 'type' );
-    if (radioButton.checked && radioButton.value === 'One-off') {
-      return true;
+    const periodSelect = <HTMLInputElement> document.getElementById(val + 'period');
+    if (radioButton.checked && type === 'One-Off') {
+      periodSelect.disabled = true;
+    } else {
+      periodSelect.disabled = false;
     }
-    return false;
   }
 
 }
@@ -288,7 +290,6 @@ function addTd(tr) {
   const nameTd = document.createElement( 'td' );
   const nameInput = document.createElement( 'input' );
   nameInput.setAttribute( 'type', 'text' );
-  nameInput.setAttribute( '[(ng-model)]', 'costEntry.name' );
   nameInput.setAttribute( 'class', 'form-control' );
   nameInput.setAttribute( 'placeholder', 'Enter Name' );
   nameInput.setAttribute( 'id', '{{i}}{{j}}costName' );
@@ -298,7 +299,6 @@ function addTd(tr) {
   const amountTd = document.createElement( 'td' );
   const amountInput = document.createElement( 'input' );
   amountInput.setAttribute( 'type', 'number' );
-  nameInput.setAttribute( '[(ng-model)]', 'costEntry.amount' );
   amountInput.setAttribute( 'class', 'form-control' );
   amountInput.setAttribute( 'placeholder', 'Enter Amount' );
   nameInput.setAttribute( 'id', '{{i}}{{j}}amount' );
@@ -308,7 +308,6 @@ function addTd(tr) {
   const currencyTd = document.createElement( 'td' );
   const currencyInput = document.createElement( 'input' );
   currencyInput.setAttribute( 'type', 'text' );
-  nameInput.setAttribute( '[(ng-model)]', 'costEntry.currency' );
   currencyInput.setAttribute( 'class', 'form-control' );
   currencyInput.setAttribute( 'placeholder', 'Enter Currency' );
   nameInput.setAttribute( 'id', '{{i}}{{j}}currency' );
@@ -322,7 +321,6 @@ function addTd(tr) {
   typeInput1.setAttribute( 'type', 'radio' );
   typeInput1.setAttribute( 'id', 'typeOneOff' );
   typeInput1.setAttribute( 'class', 'form-control' );
-  typeInput1.setAttribute( 'ng-model', 'costEntry.type' );
   typeInput1.setAttribute( 'value', 'oneOff' );
   const label2 = document.createElement( 'label' );
   label2.textContent = 'Periodic';
@@ -330,7 +328,6 @@ function addTd(tr) {
   typeInput2.setAttribute( 'type', 'radio' );
   typeInput2.setAttribute( 'id', 'typePeriodic' );
   typeInput2.setAttribute( 'class', 'form-control' );
-  typeInput2.setAttribute( 'ng-model', 'costEntry.type' );
   typeInput2.setAttribute( 'value', 'periodic' );
   typeTd.appendChild( label1 );
   typeTd.appendChild( typeInput1 );
@@ -341,7 +338,6 @@ function addTd(tr) {
   const periodTd = document.createElement( 'td' );
   const select = document.createElement( 'select' );
   select.setAttribute( 'class', 'form-control' );
-  select.setAttribute( 'ng-model', 'costEntry.period' );
   const option1 = document.createElement( 'option' );
   option1.setAttribute( 'value', 'monthly' );
   option1.textContent = 'Monthly';
